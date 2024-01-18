@@ -1,0 +1,39 @@
+# namespace: syncthing
+replicas: 1
+image: syncthing/syncthing:latest
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 500Mi
+storage:
+  pvSize: 75Gi
+  pvcSize: 50Gi
+  pvLocation: "~/k8s_data_store/next_cloud"
+service:
+  type: NodePort
+  ui:
+    name: ui
+    internalPort: 8384
+    externalPort: 8384
+  tcp:
+    name: tcp
+    internalPort: 22000
+    externalPort: 22000
+  quic: 
+    name: quicudp
+    internalPort: 22000
+    externalPort: 22000
+  local:
+    name: localudp
+    internalPort: 21027
+    externalPort: 21027
+# ports: 
+#   http:
+ports:
+      # - 8384:8384 # Web UI
+      # - 22000:22000/tcp # TCP file transfers
+      # - 22000:22000/udp # QUIC file transfers
+      # - 21027:21027/udp 

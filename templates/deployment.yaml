@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {{ $fullname := printf "%s-%s" .Release.Name .Chart.Name | trunc 63 | trimSuffix "-" }}
+  name: {{ $fullname }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  selector:
+    matchLabels:
+      app: {{ $fullname }}
+  replicas: {{ default 1 .Values.replicas | int }}
+  template:
+    metadata:
+      labels:
+        app: {{ $fullname }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image }}"
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - mountPath: /var/syncthing
+            name: data-storage
+        livenessProbe:
+          httpGet:
+            path: /rest/noauth/health
+            periodSeconds: 10
+            port: {{ .Values.service.ui.internalPort | int }}
+        readinessProbe:
+          tcpSocket: 
+            port: {{ .Values.service.ui.internalPort | int }}
+            periodSeconds: 10
+        resources: 
+{{ toYaml .Values.resources | indent 10 }}
+      volumes:
+        - name: data-storage
+          persistentVolumeClaim:
+            claimName: {{ .Chart.Name }}-pv-claim
+            
